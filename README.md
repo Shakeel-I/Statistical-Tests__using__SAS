@@ -1,7 +1,7 @@
 # CONTENTS
-Hosmer Lemeshow
+Hosmer and Lemeshow Goodness-of-Fit Test
 
-Brier score
+Brier score Test
 
 KS
 
@@ -9,14 +9,22 @@ Calibration plot
 
 ROC chart
 
-Choosing the Correct Statistical Test in SAS
+# Hosmer and Lemeshow Goodness-of-Fit Test
+The Hosmer-Lemeshow test evaluates the goodness-of-fit for logistic regression models by comparing the observed and expected frequencies of outcomes in groups of data. It helps determine whether the model adequately fits the data.
 
-<img width="985" height="833" alt="image" src="https://github.com/user-attachments/assets/63eead2e-a8cd-4b0a-88d0-6485ccb22277" />
+![Hosmer1](https://github.com/user-attachments/assets/69656266-22d6-405b-b825-4fba0585affc)
+
+proc logistic data=Employment plots=none;
+model Employed=Education Experience/gof lackfit;
+run;
+
+![Hosmer2](https://github.com/user-attachments/assets/fb10f6e1-e977-4a29-b036-8c524b75fded)
 
 
-Obs	Employed	Education	Experience
-1	  1	        16	      7
-2	1	12	24
-3	0	12	10
-4	1	9	29
-5	1	12	4
+# Brier score Test
+
+KS
+
+Calibration plot
+
+ROC chart
