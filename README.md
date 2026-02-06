@@ -5,7 +5,7 @@
 
 A calibration plot helps assess how well predicted probabilities from a model match the actual observed outcomes. It plots mean predicted probabilities on the x-axis versus the fraction of positives (observed event rate) on the y-axis.
 
-```
+```sas
 /* Step 1: Fit logistic regression model and output predicted probs */
 proc logistic data=myhmeq noprint;
   model bad(event='1') = debtinc;
@@ -43,7 +43,7 @@ If the points lie close to the diagonal line, the model is well calibrated, mean
 ## 2. ROC Curve
 The ROC (Receiver Operating Characteristic) curve visually shows the trade-off between sensitivity (true positive rate) and 1-specificity (false positive rate) across different threshold levels of a classification model. It illustrates how well the model can distinguish between positive and negative cases at various thresholds, with the area under the curve (AUC) indicating overall discriminative ability.
 
-```
+```sas
 proc logistic data=Employment plots(only)=roc;
 model Employed=Education Experience;
 run;
@@ -59,7 +59,7 @@ The Kolmogorov-Smirnov (K-S) chart is used to evaluate the discrimination abilit
 
 ![KS1](https://github.com/user-attachments/assets/35c8eeb7-44d8-4d77-9c71-a9abf87c1c27)
 
-```
+```sas
 proc rank data=loandata groups=70 out=loandata1;
     var score;
     ranks score_bin;
@@ -115,7 +115,7 @@ The Hosmer-Lemeshow test evaluates the goodness-of-fit for logistic regression m
 H₀ (null hypothesis): The model fits the data well; there is no significant difference between observed outcomes and those predicted by the model across the groups.
 
 ![Hosmer1](https://github.com/user-attachments/assets/69656266-22d6-405b-b825-4fba0585affc)
-```
+```sas
 proc logistic data=Employment plots=none;
 model Employed=Education Experience/gof lackfit;
 run;
@@ -136,7 +136,7 @@ Brier score is an important measure of calibration. It evaluates the accuracy of
 - Brier Score is 0, the best score achievable.
 - The model below gives a Brier score of 0.08 which is quite good.
 
-```
+```sas
 %let seed = 12345;
 
 /* Create column 'random' to assign random number between 0 and 1 */
