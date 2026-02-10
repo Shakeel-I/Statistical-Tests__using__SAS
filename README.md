@@ -5,27 +5,30 @@
 
 A calibration plot helps assess how well predicted probabilities from a model match the actual observed outcomes. It plots mean predicted probabilities on the x-axis versus the fraction of positives (observed event rate) on the y-axis.
 
+Step 1: Fit logistic regression model and output predicted probs
 ```sas
-/* Step 1: Fit logistic regression model and output predicted probs */
 proc logistic data=myhmeq noprint;
   model bad(event='1') = debtinc;
   output out=predout predicted=phat;
 run;
-
-/* Step 2: Bin predicted probabilities into deciles */
+```
+Step 2: Bin predicted probabilities into deciles
+```sas
 proc rank data=predout groups=10 out=binned;
   var phat;
   ranks phat_bin;
 run;
-
-/* Step 3: Calculate mean predicted (phat) and mean observed (BAD) outcome per bin */
+```
+Step 3: Calculate mean predicted (phat) and mean observed (BAD) outcome per bin
+```sas
 proc means data=binned noprint;
   class phat_bin;
   var phat bad;
   output out=cal_data mean=mean_phat mean_bad;
 run;
-
-/* Step 4: Plot calibration curve */
+```
+Step 4: Plot calibration curve
+```sas
 proc sgplot data=cal_data(where=(_type_=1));
   scatter x=mean_phat y=mean_bad / markerattrs=(symbol=CircleFilled) name='pts';
   lineparm x=0 y=0 slope=1 / lineattrs=(color=gray pattern=shortdash) name='ref';
@@ -138,14 +141,16 @@ Brier score is an important measure of calibration. It evaluates the accuracy of
 
 ```sas
 %let seed = 12345;
-
-/* Create column 'random' to assign random number between 0 and 1 */
+```
+Create column 'random' to assign random number between 0 and 1
+```sas
 data partitioned;
 	set mydata.hmeq;
 	random=ranuni(&seed);
 run;
-
-/* Partition into training_set 80% and validation_set 20% */
+```
+Partition into training_set 80% and validation_set 20%
+```sas
 data training_set validation_set;
 	set partitioned;
 	if random < 0.8 then
@@ -153,20 +158,23 @@ data training_set validation_set;
 	else
 		output validation_set;
 run;
-
-/* Drop column 'random' */
+```
+Drop column 'random'
+```sas
 data training_set;
 	set training_set;
 	drop random;
 run;
-
-/* Drop column 'random' */
+```
+Drop column 'random'
+```sas
 data validation_set;
 	set validation_set;
 	drop random;
 run;
-
-/* Train model on training_set then SCORE model on validation_set */
+```
+Train model on training_set then SCORE model on validation_set
+```sas
 proc logistic data=training_set desc;
 	class job reason /param=glm;
 	model bad=debtinc delinq loan reason;
