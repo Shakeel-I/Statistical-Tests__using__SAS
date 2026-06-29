@@ -182,3 +182,132 @@ proc logistic data=training_set desc;
 run;
 ```
 
+## 6. PSI : Population Stability Index
+PSI measures to what extent the population that was used to construct the rating system is similar to the population that is currently being observed (Baesens et al).
+Banks use a Traffic Light System (RAG - Red, Amber, Green) status when tracking Population Stability Index (PSI) metrics. Industry standard thresholds used for Total PSI are:
+
+      🟢 Green (PSI < 0.10): Minimal shift; the current population is stable compared to the base.
+	  
+      🟡 Amber (0.10 ≤ PSI < 0.25): Moderate shift; requires monitoring and investigation.
+	  
+      🔴 Red (PSI ≥ 0.25): Significant shift; requires action (potential model recalibration or redevelopment).
+	  
+PSI is calculated using the formula: (Current Percentage - Base Percentage) x LN (Current Percentage / Base Percentage).
+In the PSI tables below, we can observe a moderate shift in the first table and a significant shift in the second table.
+
+<img width="328" height="580" alt="PSI" src="https://github.com/user-attachments/assets/65b006b4-b9c6-40e0-bd4c-f6fb1fb46fed" />
+
+Define Industry-Standard Regulatory RAG Thresholds for Reporting
+```sas
+proc format;
+    value rag_colors
+        low  - <0.10  = 'lightgreen'
+        0.10 - <0.25  = 'lightorange'
+        0.25 - high   = 'lightred';
+run;
+```
+Create Baseline and Current Population Datasets
+```sas
+data moderate_PSI;
+    length PD_Score $10;
+    input PD_Score $ Base_Count Current_Count;
+    format Base_Count Current_Count comma10.;
+    datalines;
+<100       100 98
+100<=200   100 89
+200<=300   100 100
+300<=400   100 100
+400<=500   100 92
+500<=600   100 94
+600<=700   100 95
+700<=800   100 96
+800<=900   100 100
+900+       100 98
+;
+run;
+
+data significant_PSI;
+    length PD_Score $10;
+    input PD_Score $ Base_Count Current_Count;
+    format Base_Count Current_Count comma10.;
+    datalines;
+<100       100 210
+100<=200   100 180
+200<=300   100 160
+300<=400   100 112
+400<=500   100 100
+500<=600   100 60
+600<=700   100 60
+700<=800   100 60
+800<=900   100 10
+900+       100 10
+;
+run;
+```
+
+Calculate Relative Distributions and Population Stability Index (PSI) Metrics
+```sas
+proc sql;
+    create table moderate_PSI2 as
+    select PD_Score, 
+           Base_Count, 
+           Base_Count / sum(Base_Count) as Base_Perc format=percent10.2,
+           Current_Count,
+           Current_Count / sum(Current_Count) as Current_Perc format=percent10.2,
+           (calculated Current_Perc - calculated Base_Perc) * log(calculated Current_Perc / calculated Base_Perc) as PSI format=7.4
+    from moderate_PSI;
+
+    create table significant_PSI2 as
+    select PD_Score, 
+           Base_Count, 
+           Base_Count / sum(Base_Count) as Base_Perc format=percent10.2,
+           Current_Count,
+           Current_Count / sum(Current_Count) as Current_Perc format=percent10.2,
+           (calculated Current_Perc - calculated Base_Perc) * log(calculated Current_Perc / calculated Base_Perc) as PSI format=7.4
+    from significant_PSI;
+quit;
+```
+
+Generate Model Stability Reports with Visual Risk Highlighting
+```sas
+title "Moderate PSI Model Stability Report";
+proc report data=moderate_PSI2;
+    column PD_Score Base_Count=BC_sum Base_Perc=BP_sum Current_Count=CC_sum Current_Perc=CP_sum PSI=PSI_sum;
+    
+    define PD_Score / display "PD Score";
+    define BC_sum   / sum format=comma10. "Base #";
+    define BP_sum   / sum format=percent10.2 "Base %";
+    define CC_sum   / sum format=comma10. "Current #";
+    define CP_sum   / sum format=percent10.2 "Current %";
+    define PSI_sum  / sum format=7.4 "PSI" style(column)={background=rag_colors.};
+    
+    rbreak after / summarize style={font_weight=bold}; 
+    
+    compute after; 
+        PD_Score = 'Total';
+    endcomp;
+run;
+
+title "Significant PSI Model Stability Report";
+proc report data=significant_PSI2;
+    column PD_Score Base_Count=BC_sum Base_Perc=BP_sum Current_Count=CC_sum Current_Perc=CP_sum PSI=PSI_sum;
+    
+    define PD_Score / display "PD Score";
+    define BC_sum   / sum format=comma10. "Base #";
+    define BP_sum   / sum format=percent10.2 "Base %";
+    define CC_sum   / sum format=comma10. "Current #";
+    define CP_sum   / sum format=percent10.2 "Current %";
+    define PSI_sum  / sum format=7.4 "PSI" style(column)={background=rag_colors.};
+    
+    rbreak after / summarize style={font_weight=bold}; 
+    
+    compute after; 
+        PD_Score = 'Total';
+    endcomp;
+run;
+title;
+```
+
+
+
+
