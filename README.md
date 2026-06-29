@@ -1,4 +1,4 @@
-# STATISTICAL TESTS USING SAS SQL
+# STATISTICAL TESTS USING SAS
 
 ## 1. Calibration Plot
 <img width="640" height="480" alt="image" src="https://github.com/user-attachments/assets/2d395069-45a8-41ff-b9c1-1c6c1fd7a19f" />
